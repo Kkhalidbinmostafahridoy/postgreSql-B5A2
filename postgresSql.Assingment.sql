@@ -1,4 +1,5 @@
-CREATE DATABASE conservation_db
+-- database create
+CREATE DATABASE conservation_db;
 
 --creating ranger table
 CREATE TABLE rangers (
