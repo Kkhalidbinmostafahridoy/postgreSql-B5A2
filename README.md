@@ -1,0 +1,104 @@
+1. What is PostgreSQL?
+   PostgreSQL হলো একটি শক্তিশালী, ওপেন-সোর্স, অবজেক্ট-রিলেশনাল ডেটাবেস ম্যানেজমেন্ট সিস্টেম (ORDBMS)। এটি মূলত SQL ব্যবহার করে, কিন্তু এতে কিছু আধুনিক প্রোগ্রামিং ধারণা যেমন Table Inheritance, User-defined Types, এবং Full-text Search অন্তর্ভুক্ত রয়েছে।
+
+বিশেষ বৈশিষ্ট্যসমূহ:
+
+ACID (Atomicity, Consistency, Isolation, Durability) সম্পূর্ণভাবে সমর্থন করে, ফলে এটি ট্রান্সঅ্যাকশন সিস্টেমে নির্ভরযোগ্য।
+JSON এবং XML data সমর্থন করে, ফলে semi-structured data হ্যান্ডল করা যায়।
+MVCC (Multi-Version Concurrency Control) ব্যবহার করে, যা ডেটাবেইস ব্যবহারে লকিং কমিয়ে দেয় এবং পারফরম্যান্স বাড়ায়।
+ব্যবহার ক্ষেত্র:
+ব্যাঙ্কিং সিস্টেম, জিওগ্রাফিক ইনফরমেশন সিস্টেম (GIS), এনালাইটিকস প্ল্যাটফর্ম, এবং বড় স্কেল SaaS অ্যাপ্লিকেশন।
+
+2. What is the purpose of a database schema in PostgreSQL?
+   একটি ডেটাবেইস স্কিমা হলো একধরনের namespace যা ডেটা অবজেক্ট যেমন টেবিল, ভিউ, ফাংশন, এবং ইনডেক্সকে গ্রুপ করে। স্কিমা মূলত ব্যবহৃত হয় ডেটার সংগঠন এবং একাধিক ইউজারের মধ্যে আইসোলেশন তৈরি করার জন্য।
+
+মূল উদ্দেশ্য:
+বিভিন্ন প্রজেক্ট বা মডিউলের মধ্যে অবজেক্ট আলাদা রাখতে।
+একই নামে বিভিন্ন টেবিল রাখার সুযোগ দিতে ভিন্ন স্কিমাতে।
+নিরাপত্তা ও পারমিশন নিয়ন্ত্রণের সুবিধা প্রদান।
+উদাহরণ:
+
+CREATE SCHEMA hr;
+
+CREATE TABLE hr.attendance (
+attendance_id SERIAL PRIMARY KEY,
+employee_id INT REFERENCES hr.employees(employee_id), -- Foreign Key
+work_date DATE NOT NULL,
+status TEXT CHECK (status IN ('Present', 'Absent', 'Leave'))
+);
+
+3. Explain the Primary Key and Foreign Key Concepts in PostgreSQL
+
+Primary Key
+একটি Primary Key এমন একটি কলাম বা কলামগুলোর সমষ্টি যা প্রতিটি রেকর্ডকে ইউনিকভাবে চিহ্নিত করে। এটি কখনো NULL হতে পারে না এবং PostgreSQL এটি অটোমেটিকভাবে ইনডেক্স করে।
+
+উদাহরণ:
+
+CREATE TABLE students (
+student_id SERIAL PRIMARY KEY,
+name TEXT NOT NULL
+);
+
+CREATE TABLE courses (
+course_id SERIAL PRIMARY KEY,
+course_name TEXT NOT NULL
+);
+
+এখানে student_id, course_id হচ্ছে Primary Key যা প্রতিটি শিক্ষার্থীকে আলাদা করে।
+
+Foreign Key
+
+Foreign Key ব্যবহার করে একটি টেবিলের মধ্যে অন্য একটি টেবিলের Primary Key রেফারেন্স করা হয়। এর মাধ্যমে টেবিলগুলোর মধ্যে সম্পর্ক (relationship) তৈরি হয় এবং ডেটার অখণ্ডতা নিশ্চিত হয়।
+
+উদাহরণ:
+
+CREATE TABLE enrollments (
+id SERIAL PRIMARY KEY,
+student_id INT REFERENCES students(student_id),
+course_name TEXT
+);
+
+এখানে enrollments.student_id ফিল্ডটি students.student_id কে রেফারেন্স করে। এর ফলে আপনি নিশ্চিত করতে পারেন যে student_id কেবল তখনই ইনসার্ট হবে যদি তা students টেবিলে আগে থেকে থাকে।
+
+4. What is the Difference Between the VARCHAR and CHAR Data Types?
+
+CHAR(n)
+
+Fixed-length ডেটা টাইপ।
+আপনি যদি CHAR(10) ডিফাইন করেন এবং "abc" ইনপুট দেন, তাহলে এটি "abc " এইভাবে স্টোর করে (extra space দিয়ে পূর্ণ করে)।
+সাধারণত legacy systems-এ ব্যবহার করা হতো।
+VARCHAR(n)
+Variable-length ডেটা টাইপ।
+ইনপুট যতটুকু, ঠিক ততটুকুই স্পেস নেয় (space efficiency)।
+আধুনিক অ্যাপ্লিকেশনে ব্যাপকভাবে ব্যবহৃত হয়।
+উদাহরণ:
+name CHAR(10) -- 'Ajmol '
+name VARCHAR(10) -- 'Ajmol'
+
+বাস্তবিক ব্যবহারে: VARCHAR বেশি কার্যকর কারণ এটি স্টোরেজ-এ কার্যকর এবং ফ্লেক্সিবল।
+
+5. Explain the Purpose of the WHERE Clause in a SELECT Statement
+
+WHERE ক্লজ একটি SELECT, UPDATE, বা DELETE স্টেটমেন্টে ব্যবহার করা হয় ডেটা ফিল্টার করার জন্য। এটি নির্দিষ্ট শর্ত অনুযায়ী রেকর্ড নির্বাচন করে, অর্থাৎ আপনি যেসব শর্ত পূরণ করে এমন ডেটা চান, কেবল সেগুলোকেই আনে।
+
+এর প্রয়োজনীয়তা:
+
+সবসময় পুরো টেবিল থেকে ডেটা দেখা প্রয়োজন হয় না।
+নির্দিষ্ট শর্ত অনুযায়ী ফিল্টার করে শুধুমাত্র প্রয়োজনীয় রেকর্ড পাওয়া যায়।
+ডেটা প্রোসেসিং এবং রিপোর্টিং সহজ হয়।
+উদাহরণ:
+SELECT \* FROM employees WHERE department = 'CSE';
+এখানে কেবল ‘CSE’ বিভাগের এমপ্লয়িদের তথ্য রিটার্ন করবে।
+
+DELETE FROM orders WHERE status = 'Cancelled';
+এখানে কেবল ‘Cancelled’ অর্ডারগুলো ডিলিট হবে।
+
+8. What is the significance of the JOIN operation, and how does it work in PostgreSQL?
+
+Ans- JOIN operation মূলত ব্যবহার করা হয় দুইটা ডাটাবেইজ টেবিলকে একত্রে করার জন্য। এটার কারন হলো আমার সব ডাটা এক টেবিলে থাকে না, তার কিছু রিলেটেড ডাটা অন্য টেবিলেও থাকে।যার ফলে যখন আমাদের দুইটা টেবিলের ডাটা প্রয়োজন হয় তখন সমস্যা তৈরি হয়। এই সমস্যার সমাধান করার জন্য JOIN কুয়েরি ব্যবহার করা হয়। এটার মাধ্যমে আমরা টেবিলে Primary key or Foreign key ব্যবহার করে দুইটা টেবিলের মধ্যে সংযোগ স্থাপন করতে পারি।
+
+Syntax :
+
+JOIN person1 ON person1.id = person2.id
+
+এটির আরো দুইটি ভাগ আছে Left join,Right join. এই দুইটি টেবিল মূলত একটি স্পেশাল কারনে ব্যবহার করা হয়ে থাকে। সেটা হলো আমরা যখন join ব্যবহার করি, এটি নিজে থেকে ফিল্টার করে null ভেল্যু গুলোকে মুছে দেয়। তো যার ফলে অনেক ডাটা বাদ পড়ে যেতে পারে। এটি সমাধান করার জন্যই মূলত left join, right join ব্যবহার করা হয়। এটি সব ভেল্যুই একসেপ্ট করে, null ভেল্যু সহ।
